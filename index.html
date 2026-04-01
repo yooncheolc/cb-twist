@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국어 텅 트위스터 챌린지</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .timer {
+            font-variant-numeric: tabular-nums;
+        }
+        /* Custom scrollbar for leaderboard - Light Theme */
+        #leaderboard-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        #leaderboard-list::-webkit-scrollbar-track {
+            background: #f1f5f9; /* bg-slate-100 */
+        }
+        #leaderboard-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* bg-slate-300 */
+            border-radius: 4px;
+        }
+        #leaderboard-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* bg-slate-400 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-7xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-cyan-600">한국어 텅 트위스터 챌린지 🚀</h1>
+            <p class="text-gray-600 mt-2">당신의 발음 실력을 시험해보세요!</p>
+        </header>
+
+        <main class="flex flex-col md:flex-row gap-8">
+            <!-- Left Panel: Challenge Area -->
+            <div class="w-full md:w-2/3 space-y-6">
+                <!-- Name Input -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <label for="userName" class="block text-lg font-semibold mb-2 text-gray-700">1. 참가자 이름 입력</label>
+                    <input type="text" id="userName" placeholder="이름을 입력하세요..." class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition">
+                </div>
+
+                <!-- Script -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h2 class="text-lg font-semibold mb-3 text-gray-700">2. 도전 문장 (대본)</h2>
+                    <!-- Changed to black text on light gray background for high contrast -->
+                    <p id="script" class="text-xl leading-relaxed bg-gray-100 p-5 rounded-lg text-black font-medium border border-gray-300 shadow-inner">너와 헤어진 후 힘들어 하는 내게 박 법학사님과 백 법학사님께서 차라리 상담담당 선생님 성 선생님을 추천해 주셨어. 그렇게 찾은 러브코치 상담당담 선생님 성 선생님이 내게 말했어. 자기는 참치 꽁치찜을 좋아한다고 이게 무슨 헛 소리 인가 싶어. 난 청송콩찰떡이 좋다고 했지 시답잖은 농담 속에 서울 찹쌀같이 나눠저 있던 마음이 쿵더더덕 덩기더더덕 녹아 버렸어.</p>
+                </div>
+
+                <!-- User Input -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h2 class="text-lg font-semibold mb-3 text-gray-700">3. 음성으로 입력하기 (시작 버튼을 누른 후 말하세요)</h2>
+                    <textarea id="userInput" rows="6" placeholder="이곳에 크롬북 음성 입력 기능으로 텍스트가 입력됩니다..." class="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition" readonly></textarea>
+                </div>
+
+                <!-- Controls and Results -->
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex gap-4">
+                        <button id="startButton" class="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 shadow-md">시작</button>
+                        <button id="finishButton" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 shadow-md" disabled>완료</button>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-gray-500 text-sm">경과 시간</p>
+                        <div id="timer" class="text-4xl font-bold timer text-orange-600">0.000</div>
+                    </div>
+                    <div id="result" class="text-center font-semibold text-lg hidden">
+                        <p>정확도: <span id="accuracy" class="text-green-600">0%</span></p>
+                        <p>최종 점수: <span id="score" class="text-2xl text-orange-600">0</span></p>
+                    </div>
+                </div>
+                 <div id="errorMessage" class="text-red-500 text-center font-semibold mt-2"></div>
+            </div>
+
+            <!-- Right Panel: Leaderboard -->
+            <aside class="w-full md:w-1/3 bg-white p-6 rounded-xl shadow-lg border border-gray-200 flex flex-col">
+                <h2 class="text-2xl font-bold mb-4 text-center text-cyan-600 border-b-2 border-gray-200 pb-2">🏆 리더보드 🏆</h2>
+                <ul id="leaderboard-list" class="space-y-3 overflow-y-auto pr-2 flex-grow h-96">
+                    <!-- Leaderboard items will be inserted here -->
+                     <li class="text-center text-gray-500 mt-4">아직 기록이 없습니다.</li>
+                </ul>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const userNameInput = document.getElementById('userName');
+            const scriptText = document.getElementById('script').textContent;
+            const userInput = document.getElementById('userInput');
+            const startButton = document.getElementById('startButton');
+            const finishButton = document.getElementById('finishButton');
+            const timerDisplay = document.getElementById('timer');
+            const resultDisplay = document.getElementById('result');
+            const accuracyDisplay = document.getElementById('accuracy');
+            const scoreDisplay = document.getElementById('score');
+            const leaderboardList = document.getElementById('leaderboard-list');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // State
+            let timerInterval;
+            let startTime;
+            let leaderboardData = JSON.parse(sessionStorage.getItem('leaderboard')) || [];
+
+            // --- Levenshtein Distance Function for Accuracy Calculation ---
+            // 두 문자열 간의 편집 거리(Levenshtein 거리)를 계산합니다.
+            // 삽입, 삭제, 대체 연산을 몇 번 해야 한 문자열이 다른 문자열로 변환되는지를 측정합니다.
+            const levenshtein = (s1, s2) => {
+                s1 = s1.replace(/\s+/g, ''); // 공백 제거
+                s2 = s2.replace(/\s+/g, ''); // 공백 제거
+
+                const track = Array(s2.length + 1).fill(null).map(() =>
+                    Array(s1.length + 1).fill(null));
+                for (let i = 0; i <= s1.length; i += 1) {
+                    track[0][i] = i;
+                }
+                for (let j = 0; j <= s2.length; j += 1) {
+                    track[j][0] = j;
+                }
+                for (let j = 1; j <= s2.length; j += 1) {
+                    for (let i = 1; i <= s1.length; i += 1) {
+                        const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
+                        track[j][i] = Math.min(
+                            track[j][i - 1] + 1, // deletion
+                            track[j - 1][i] + 1, // insertion
+                            track[j - 1][i - 1] + indicator, // substitution
+                        );
+                    }
+                }
+                return track[s2.length][s1.length];
+            };
+            
+            // --- UI Update Functions ---
+            const updateTimer = () => {
+                const elapsedTime = Date.now() - startTime;
+                timerDisplay.textContent = (elapsedTime / 1000).toFixed(3);
+            };
+
+            const updateLeaderboard = () => {
+                leaderboardData.sort((a, b) => b.score - a.score); // 점수 내림차순 정렬
+                sessionStorage.setItem('leaderboard', JSON.stringify(leaderboardData));
+                
+                leaderboardList.innerHTML = ''; // 리더보드 초기화
+                if (leaderboardData.length === 0) {
+                     leaderboardList.innerHTML = '<li class="text-center text-gray-500 mt-4">아직 기록이 없습니다.</li>';
+                     return;
+                }
+                
+                leaderboardData.forEach((entry, index) => {
+                    const rankEmoji = ['🥇', '🥈', '🥉'][index] || `&nbsp;${index + 1}.`;
+                    const li = document.createElement('li');
+                    li.classList.add('flex', 'justify-between', 'items-center', 'bg-gray-50', 'border', 'border-gray-200', 'p-3', 'rounded-lg');
+                    li.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="font-bold text-lg w-10 text-yellow-500 shadow-sm">${rankEmoji}</span>
+                            <span class="font-semibold text-gray-800">${entry.name}</span>
+                        </div>
+                        <div class="text-right">
+                             <span class="font-bold text-lg text-cyan-600">${entry.score.toLocaleString()} 점</span>
+                             <p class="text-xs text-gray-500">${entry.time.toFixed(3)}s / ${entry.accuracy.toFixed(2)}%</p>
+                        </div>
+                    `;
+                    leaderboardList.appendChild(li);
+                });
+            };
+
+            // --- Event Handlers ---
+            startButton.addEventListener('click', () => {
+                const userName = userNameInput.value.trim();
+                if (!userName) {
+                    errorMessage.textContent = '참가자 이름을 먼저 입력해주세요!';
+                    userNameInput.focus();
+                    return;
+                }
+                
+                errorMessage.textContent = '';
+                resultDisplay.classList.add('hidden');
+                userInput.value = '';
+                userInput.removeAttribute('readonly');
+                userInput.focus();
+
+                startButton.disabled = true;
+                finishButton.disabled = false;
+                userNameInput.disabled = true;
+                
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 10); // 10ms 마다 업데이트하여 부드럽게 표시
+            });
+
+            finishButton.addEventListener('click', () => {
+                clearInterval(timerInterval);
+                const endTime = Date.now();
+                const elapsedTimeInSeconds = (endTime - startTime) / 1000;
+                
+                const userText = userInput.value;
+                
+                // 1. 정확도 계산 (Levenshtein 거리 사용)
+                // 편집 거리가 짧을수록 정확도가 높음. 공백은 제거하고 비교.
+                const distance = levenshtein(scriptText, userText);
+                const originalLength = scriptText.replace(/\s+/g, '').length;
+                const accuracy = Math.max(0, (1 - (distance / originalLength)) * 100);
+                
+                // 2. 점수 계산 알고리즘
+                // - 기본 점수: 20,000점
+                // - 시간 패널티: 1초당 100점 감점 (빠를수록 유리)
+                // - 정확도 보너스: 최종 점수에 정확도(%)를 곱함. 정확도가 100%가 아니면 점수가 크게 깎임.
+                // - 최소 점수는 0점.
+                const maxScore = 20000;
+                const timePenalty = elapsedTimeInSeconds * 100;
+                let score = (maxScore - timePenalty) * (accuracy / 100);
+                score = Math.round(Math.max(0, score)); // 0점 이하로 내려가지 않도록 함
+
+                // 결과 표시
+                accuracyDisplay.textContent = `${accuracy.toFixed(2)}%`;
+                scoreDisplay.textContent = score.toLocaleString();
+                resultDisplay.classList.remove('hidden');
+
+                // 리더보드에 추가
+                leaderboardData.push({
+                    name: userNameInput.value.trim(),
+                    score: score,
+                    time: elapsedTimeInSeconds,
+                    accuracy: accuracy
+                });
+                updateLeaderboard();
+                
+                // 버튼 및 입력창 상태 초기화
+                startButton.disabled = false;
+                finishButton.disabled = true;
+                userNameInput.disabled = false;
+                userInput.setAttribute('readonly', true);
+            });
+            
+            // 초기 로딩 시 리더보드 표시
+            updateLeaderboard();
+        });
+    </script>
+</body>
+</html>
